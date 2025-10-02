@@ -15,6 +15,9 @@ export interface Document {
   document_type?: string
   uploaded_at: string
   processed: boolean
+  processing_status?: 'pending' | 'processing' | 'completed' | 'failed'
+  processing_progress?: number
+  processing_step?: string
   ocr_text?: string
   summary?: string
   page_count?: number

@@ -108,6 +108,23 @@ def get_document_with_text(document_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Document not found")
     return document
 
+@router.get("/{document_id}/status")
+def get_document_status(document_id: str, db: Session = Depends(get_db)):
+    """Get document processing status and progress"""
+    document = db.query(Document).filter(Document.id == document_id).first()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return {
+        "id": str(document.id),
+        "filename": document.filename,
+        "processed": document.processed,
+        "processing_status": document.processing_status,
+        "processing_progress": document.processing_progress,
+        "processing_step": document.processing_step,
+        "uploaded_at": document.uploaded_at
+    }
+
 @router.delete("/{document_id}")
 def delete_document(document_id: str, db: Session = Depends(get_db)):
     """Delete a document and its associated data"""

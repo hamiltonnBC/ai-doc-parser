@@ -25,6 +25,7 @@ export const documentsApi = {
   },
   get: (id: string) => api.get(`/api/documents/${id}`),
   getWithText: (id: string) => api.get(`/api/documents/${id}/text`),
+  getStatus: (id: string) => api.get(`/api/documents/${id}/status`),
   listByCase: (caseId: string) => api.get(`/api/documents/case/${caseId}`),
   delete: (id: string) => api.delete(`/api/documents/${id}`),
 }

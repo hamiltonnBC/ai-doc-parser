@@ -32,6 +32,9 @@ class DocumentResponse(DocumentBase):
     case_id: UUID
     uploaded_at: datetime
     processed: bool
+    processing_status: Optional[str] = "pending"
+    processing_progress: Optional[int] = 0
+    processing_step: Optional[str] = None
     summary: Optional[str] = None
     page_count: Optional[int] = None
     
@@ -55,3 +58,31 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     sources: List[dict] = []
+    confidence: Optional[float] = None
+
+class ChatMessageResponse(BaseModel):
+    id: UUID
+    question: str
+    answer: str
+    sources: List[dict] = []
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class SourceResponse(BaseModel):
+    document_id: UUID
+    document_name: str
+    chunk_text: str
+    relevance_score: float
+    page_number: Optional[int] = None
+
+class DocumentChunkResponse(BaseModel):
+    id: UUID
+    document_id: UUID
+    chunk_text: str
+    chunk_index: int
+    page_number: Optional[int] = None
+    
+    class Config:
+        from_attributes = True

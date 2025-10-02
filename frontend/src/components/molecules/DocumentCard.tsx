@@ -1,24 +1,44 @@
 import React from 'react'
 import { Badge } from '@atoms/Badge'
 import { Button } from '@atoms/Button'
+import { ProgressBar } from '@atoms/ProgressBar'
+import { useDocumentProgress } from '../../hooks/useDocumentProgress'
 
 interface DocumentCardProps {
+  id: string
   filename: string
   documentType?: string
   uploadDate: string
   processed: boolean
+  processing_status?: 'pending' | 'processing' | 'completed' | 'failed'
+  processing_progress?: number
+  processing_step?: string
   onView: () => void
   onDelete?: () => void
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
+  id,
   filename,
   documentType,
   uploadDate,
   processed,
+  processing_status = 'pending',
+  processing_progress = 0,
+  processing_step,
   onView,
   onDelete
 }) => {
+  // Use real-time progress tracking for documents that are still processing
+  const { progress } = useDocumentProgress(
+    !processed && (processing_status === 'processing' || processing_status === 'pending') ? id : null
+  );
+
+  // Use real-time data if available, otherwise fall back to props
+  const currentStatus = progress?.processing_status || processing_status;
+  const currentProgress = progress?.processing_progress || processing_progress;
+  const currentStep = progress?.processing_step || processing_step;
+  const isProcessed = progress?.processed ?? processed;
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={onView}>
       <div className="flex items-start justify-between mb-3">
@@ -33,16 +53,30 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             <p className="text-sm text-gray-500">{new Date(uploadDate).toLocaleDateString()}</p>
           </div>
         </div>
-        <Badge variant={processed ? 'success' : 'warning'}>
-          {processed ? 'Processed' : 'Processing'}
+        <Badge variant={isProcessed ? 'success' : currentStatus === 'failed' ? 'error' : 'warning'}>
+          {isProcessed ? 'Processed' : currentStatus === 'failed' ? 'Failed' : 'Processing'}
         </Badge>
       </div>
+      
+      {/* Progress bar for processing documents */}
+      {!isProcessed && currentStatus !== 'failed' && (
+        <div className="mb-3">
+          <ProgressBar
+            progress={currentProgress}
+            status={currentStatus}
+            step={currentStep}
+          />
+        </div>
+      )}
       
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {documentType && <Badge variant="neutral">{documentType}</Badge>}
-          {processed && (
+          {isProcessed && (
             <span className="text-xs text-green-600 font-medium">✓ Ready</span>
+          )}
+          {currentStatus === 'failed' && (
+            <span className="text-xs text-red-600 font-medium">✗ Failed</span>
           )}
         </div>
         <div className="flex items-center space-x-2">

@@ -57,10 +57,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           {filteredDocuments.map((doc) => (
             <DocumentCard
               key={doc.id}
+              id={doc.id}
               filename={doc.filename}
               documentType={doc.document_type}
               uploadDate={doc.uploaded_at}
               processed={doc.processed}
+              processing_status={doc.processing_status}
+              processing_progress={doc.processing_progress}
+              processing_step={doc.processing_step}
               onView={() => onDocumentClick(doc.id)}
               onDelete={onDocumentDelete ? () => onDocumentDelete(doc.id) : undefined}
             />
