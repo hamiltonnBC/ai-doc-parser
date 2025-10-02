@@ -107,3 +107,32 @@ def get_document_with_text(document_id: str, db: Session = Depends(get_db)):
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     return document
+
+@router.delete("/{document_id}")
+def delete_document(document_id: str, db: Session = Depends(get_db)):
+    """Delete a document and its associated data"""
+    document = db.query(Document).filter(Document.id == document_id).first()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    try:
+        # Delete associated entities first (foreign key constraint)
+        from app.models import ExtractedEntity
+        db.query(ExtractedEntity).filter(ExtractedEntity.document_id == document_id).delete()
+        
+        # Delete the file from storage
+        if os.path.exists(document.file_path):
+            os.remove(document.file_path)
+            logger.info(f"Deleted file: {document.file_path}")
+        
+        # Delete the document record
+        db.delete(document)
+        db.commit()
+        
+        logger.info(f"Successfully deleted document: {document.filename}")
+        return {"message": "Document deleted successfully"}
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error deleting document {document_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error deleting document")

@@ -4,7 +4,7 @@ from app.database import engine, Base
 from app.api.routes import documents, cases, chat, summary, entities
 
 app = FastAPI(
-    title="InQuery Demo API",
+    title="Demo API",
     description="Medical document processing demo",
     version="1.0.0"
 )
@@ -30,7 +30,7 @@ app.include_router(entities.router, prefix="/api/entities", tags=["entities"])
 
 @app.get("/")
 def read_root():
-    return {"message": "InQuery Demo API", "status": "running"}
+    return {"message": "Demo API", "status": "running"}
 
 @app.get("/health")
 def health_check():

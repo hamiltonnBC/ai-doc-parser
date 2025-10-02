@@ -10,20 +10,27 @@ export interface Document {
   id: string
   case_id: string
   filename: string
+  file_path: string
   file_type?: string
   document_type?: string
   uploaded_at: string
   processed: boolean
+  ocr_text?: string
   summary?: string
   page_count?: number
 }
 
 export interface Entity {
   id: string
+  document_id: string
   entity_type: string
   entity_value: string
   confidence: number
-  source_location?: any
+  source_location?: {
+    page?: number
+    bbox?: number[]
+  }
+  extracted_at: string
 }
 
 export interface ChatMessage {

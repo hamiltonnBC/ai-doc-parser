@@ -24,7 +24,14 @@ export const documentsApi = {
     })
   },
   get: (id: string) => api.get(`/api/documents/${id}`),
+  getWithText: (id: string) => api.get(`/api/documents/${id}/text`),
   listByCase: (caseId: string) => api.get(`/api/documents/case/${caseId}`),
+  delete: (id: string) => api.delete(`/api/documents/${id}`),
+}
+
+export const entitiesApi = {
+  getByDocument: (documentId: string) => api.get(`/api/entities/document/${documentId}`),
+  getByCase: (caseId: string) => api.get(`/api/entities/case/${caseId}`),
 }
 
 export const chatApi = {
