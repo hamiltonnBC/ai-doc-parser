@@ -1,10 +1,13 @@
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas import DocumentResponse
 from app.schemas.document import DocumentWithText
 from app.models import Document, Case
 from app.utils.document_processor import DocumentProcessor
+from app.services.usage_service import usage_service
+from app.middleware.rate_limiter import rate_limiter
+from app.config import settings
 import os
 import uuid
 import logging
@@ -29,14 +32,31 @@ def process_document_background(document_id: str):
 @router.post("/upload/{case_id}", response_model=DocumentResponse)
 async def upload_document(
     case_id: str,
+    request: Request,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
+    # Rate limiting for uploads (if demo mode enabled)
+    if settings.demo_mode:
+        rate_limiter.check_rate_limit(request, "upload", 10, 20)  # 10 per hour, 20 per day
+    
     # Check if case exists
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
+    
+    # Read file content to check size
+    file_content = await file.read()
+    file_size = len(file_content)
+    
+    # Usage protection checks
+    try:
+        usage_service.check_file_size(file_size)
+        usage_service.check_total_storage(db)
+        usage_service.check_document_count(db, case_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
     # Validate file type
     allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
@@ -55,8 +75,7 @@ async def upload_document(
     file_path = os.path.join(upload_dir, f"{file_id}{file_extension}")
     
     with open(file_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
+        f.write(file_content)  # Use already read content
     
     # Create document record
     document = Document(
@@ -153,3 +172,8 @@ def delete_document(document_id: str, db: Session = Depends(get_db)):
         db.rollback()
         logger.error(f"Error deleting document {document_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Error deleting document")
+
+@router.get("/usage-stats")
+def get_usage_stats(db: Session = Depends(get_db)):
+    """Get current usage statistics and limits"""
+    return usage_service.get_usage_stats(db)

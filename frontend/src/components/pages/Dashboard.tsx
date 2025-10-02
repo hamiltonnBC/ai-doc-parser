@@ -5,6 +5,7 @@ import { DocumentList } from '@organisms/DocumentList'
 import { ChatInterface } from '@organisms/ChatInterface'
 import { FileUploader } from '@molecules/FileUploader'
 import { ConfirmModal } from '@molecules/ConfirmModal'
+import { UsageStats } from '@molecules/UsageStats'
 import { Button } from '@atoms/Button'
 import { Spinner } from '@atoms/Spinner'
 import { casesApi, documentsApi } from '@/services/api'
@@ -184,6 +185,9 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Usage Statistics */}
+        <UsageStats />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

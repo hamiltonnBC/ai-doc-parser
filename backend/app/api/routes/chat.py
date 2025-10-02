@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -6,20 +6,31 @@ from uuid import UUID
 from app.database import get_db
 from app.schemas import ChatRequest, ChatResponse, ChatMessageResponse
 from app.services.rag_service import rag_service
+from app.middleware.rate_limiter import rate_limiter
+from app.config import settings
 
 router = APIRouter()
 
 @router.post("/ask", response_model=ChatResponse)
-def ask_question(request: ChatRequest, db: Session = Depends(get_db)):
+def ask_question(chat_request: ChatRequest, request: Request, db: Session = Depends(get_db)):
     """Ask a question about documents in a case"""
     try:
+        # Rate limiting for chat requests (if demo mode enabled)
+        if settings.demo_mode:
+            rate_limiter.check_rate_limit(
+                request, 
+                "chat", 
+                settings.max_chat_requests_per_hour, 
+                settings.max_chat_requests_per_day
+            )
+        
         # Query documents using RAG service
-        result = rag_service.query_documents(request.question, request.case_id, db)
+        result = rag_service.query_documents(chat_request.question, chat_request.case_id, db)
         
         # Save chat message to database
         rag_service.save_chat_message(
-            case_id=request.case_id,
-            question=request.question,
+            case_id=chat_request.case_id,
+            question=chat_request.question,
             answer=result["answer"],
             sources=result["sources"],
             db=db
@@ -102,3 +113,9 @@ def reprocess_all_embeddings(case_id: UUID, db: Session = Depends(get_db)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reprocessing embeddings: {str(e)}")
+
+@router.get("/usage-stats")
+def get_usage_stats(db: Session = Depends(get_db)):
+    """Get current usage statistics and limits"""
+    from app.services.usage_service import usage_service
+    return usage_service.get_usage_stats(db)

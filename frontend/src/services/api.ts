@@ -44,6 +44,21 @@ export const chatApi = {
     api.post(`/api/chat/clear/${caseId}`),
   getSources: (chatId: string) => 
     api.get(`/api/chat/sources/${chatId}`),
+  getUsageStats: () => 
+    api.get('/api/chat/usage-stats'),
 }
+
+// Add response interceptor for better error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 429) {
+      // Rate limit exceeded
+      const message = error.response.data?.detail || 'Rate limit exceeded. Please try again later.'
+      throw new Error(message)
+    }
+    return Promise.reject(error)
+  }
+)
 
 export default api

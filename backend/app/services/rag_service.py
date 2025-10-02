@@ -75,6 +75,11 @@ class RAGService:
             # Split document into chunks
             chunks = self.text_splitter.split_text(text)
             
+            # Limit chunks in demo mode to control costs
+            if settings.demo_mode and len(chunks) > settings.max_embeddings_per_document:
+                logger.warning(f"Limiting chunks from {len(chunks)} to {settings.max_embeddings_per_document} for cost control")
+                chunks = chunks[:settings.max_embeddings_per_document]
+            
             # Create LangChain documents with metadata
             documents = []
             for i, chunk in enumerate(chunks):

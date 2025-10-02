@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Starting InQuery Demo Application..."
+echo "🚀 Starting Demo Application..."
 echo ""
 echo "This will start:"
 echo "  - Frontend: http://localhost:3000"

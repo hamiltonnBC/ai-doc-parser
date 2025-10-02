@@ -47,6 +47,31 @@ This project replicates a modern AI company's technology stack to demonstrate pr
 - **EasyOCR** - Optical character recognition
 - **Pillow** - Image processing and enhancement
 
+## 📸 Application Screenshots
+
+### Dashboard Overview
+The main dashboard provides a comprehensive view of your document processing system with real-time statistics, document management, and integrated AI chat functionality.
+
+![Dashboard](demo/dashboard.png)
+
+### Document Analysis Features
+For each uploaded document, the system provides three key analysis views:
+
+#### 1. Document Overview & AI Summary
+View automatically generated summaries that extract key information and provide insights into the document content.
+
+![Document Overview](demo/overview.png)
+
+#### 2. AI-Powered Document Chat
+Chat directly with your documents using RAG (Retrieval-Augmented Generation) technology. The AI uses cosine similarity search to find relevant document sections and provides accurate answers with source citations.
+
+![Document Chat](demo/chat.png)
+
+#### 3. Extracted Entities & Key Details
+Review all extracted entities including medications, diagnoses, providers, dates, and other key information. This structured data can be used to build comprehensive profiles of individuals, track medical histories, and identify important patterns across documents.
+
+![Extracted Entities](demo/entitites.png)
+
 ## 🚀 Quick Start
 
 ### Prerequisites
