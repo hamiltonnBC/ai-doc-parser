@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '@templates/DashboardLayout'
 import { DocumentList } from '@organisms/DocumentList'
+import { ChatInterface } from '@organisms/ChatInterface'
 import { FileUploader } from '@molecules/FileUploader'
 import { ConfirmModal } from '@molecules/ConfirmModal'
 import { Button } from '@atoms/Button'
@@ -11,7 +12,6 @@ import { Case, Document } from '@/types'
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate()
-  const [cases, setCases] = useState<Case[]>([])
   const [selectedCase, setSelectedCase] = useState<Case | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,7 +41,6 @@ const Dashboard: React.FC = () => {
     try {
       const response = await casesApi.list()
       const casesList = response.data
-      setCases(casesList)
       if (casesList.length > 0) {
         setSelectedCase(casesList[0])
       } else {
@@ -62,7 +61,6 @@ const Dashboard: React.FC = () => {
         description: 'Sample medical records case'
       })
       const newCase = response.data
-      setCases([newCase])
       setSelectedCase(newCase)
     } catch (error) {
       console.error('Error creating case:', error)
@@ -162,7 +160,20 @@ const Dashboard: React.FC = () => {
               {selectedCase?.description || 'Manage your medical documents'}
             </p>
           </div>
-          <FileUploader onFileSelect={handleFileUpload} />
+          <div className="flex items-center space-x-3">
+            {selectedCase && (
+              <Button
+                variant="secondary"
+                onClick={() => navigate(`/chat-history/${selectedCase.id}`)}
+              >
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                </svg>
+                Chat History
+              </Button>
+            )}
+            <FileUploader onFileSelect={handleFileUpload} />
+          </div>
         </div>
 
         {uploading && (
@@ -238,6 +249,30 @@ const Dashboard: React.FC = () => {
             onDocumentDelete={handleDeleteClick}
           />
         </div>
+
+        {/* Chat Interface */}
+        {selectedCase && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-xl font-semibold flex items-center">
+                <svg className="w-5 h-5 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                </svg>
+                AI Assistant
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Ask questions about your documents and get AI-powered answers with source citations
+              </p>
+            </div>
+            <div className="h-96">
+              <ChatInterface
+                caseId={selectedCase.id}
+                onSourceClick={(documentId) => navigate(`/document/${documentId}`)}
+                className="h-full"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Delete Confirmation Modal */}
         <ConfirmModal

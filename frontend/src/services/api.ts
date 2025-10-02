@@ -37,7 +37,13 @@ export const entitiesApi = {
 
 export const chatApi = {
   ask: (caseId: string, question: string) => 
-    api.post('/api/chat', { case_id: caseId, question }),
+    api.post('/api/chat/ask', { case_id: caseId, question }),
+  getHistory: (caseId: string) => 
+    api.get(`/api/chat/history/${caseId}`),
+  clearHistory: (caseId: string) => 
+    api.post(`/api/chat/clear/${caseId}`),
+  getSources: (chatId: string) => 
+    api.get(`/api/chat/sources/${chatId}`),
 }
 
 export default api

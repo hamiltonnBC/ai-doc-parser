@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '@templates/DashboardLayout'
 import { EntityList } from '@organisms/EntityList'
+import { ChatInterface } from '@organisms/ChatInterface'
 import { ConfirmModal } from '@molecules/ConfirmModal'
+import { FloatingChatButton } from '@atoms/FloatingChatButton'
 import { Button } from '@atoms/Button'
 import { Badge } from '@atoms/Badge'
 import { Spinner } from '@atoms/Spinner'
@@ -16,7 +18,7 @@ const DocumentDetail: React.FC = () => {
   const [entities, setEntities] = useState<Entity[]>([])
   const [loading, setLoading] = useState(true)
   const [entitiesLoading, setEntitiesLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'text' | 'entities'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'text' | 'entities' | 'chat'>('overview')
   const [deleteModal, setDeleteModal] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -90,13 +92,26 @@ const DocumentDetail: React.FC = () => {
           <Button variant="secondary" onClick={() => navigate('/')}>
             ← Back to Dashboard
           </Button>
-          <Button 
-            variant="danger" 
-            onClick={() => setDeleteModal(true)}
-            disabled={deleting}
-          >
-            {deleting ? 'Deleting...' : 'Delete Document'}
-          </Button>
+          <div className="flex items-center space-x-3">
+            {document && (
+              <Button 
+                variant="secondary" 
+                onClick={() => navigate(`/chat-history/${document.case_id}`)}
+              >
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                </svg>
+                Chat History
+              </Button>
+            )}
+            <Button 
+              variant="danger" 
+              onClick={() => setDeleteModal(true)}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting...' : 'Delete Document'}
+            </Button>
+          </div>
         </div>
 
         {/* Document Header */}
@@ -141,7 +156,7 @@ const DocumentDetail: React.FC = () => {
         <div className="bg-white rounded-lg shadow">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
-              {['overview', 'text', 'entities'].map((tab) => (
+              {['overview', 'text', 'entities', 'chat'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab as any)}
@@ -246,6 +261,21 @@ const DocumentDetail: React.FC = () => {
                 <EntityList entities={entities} loading={entitiesLoading} />
               </div>
             )}
+
+            {/* Chat Tab */}
+            {activeTab === 'chat' && document && (
+              <div className="h-96">
+                <ChatInterface
+                  caseId={document.case_id}
+                  onSourceClick={(documentId) => {
+                    if (documentId !== document.id) {
+                      navigate(`/document/${documentId}`)
+                    }
+                  }}
+                  className="h-full"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -260,6 +290,11 @@ const DocumentDetail: React.FC = () => {
           onCancel={() => setDeleteModal(false)}
           danger={true}
         />
+
+        {/* Floating Chat Button - only show when not on chat tab */}
+        {document && activeTab !== 'chat' && (
+          <FloatingChatButton caseId={document.case_id} />
+        )}
       </div>
     </DashboardLayout>
   )

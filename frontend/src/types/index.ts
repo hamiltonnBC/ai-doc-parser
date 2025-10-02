@@ -36,8 +36,29 @@ export interface Entity {
   extracted_at: string
 }
 
+export interface ChatSource {
+  document_id: string
+  document_name: string
+  chunk_text: string
+  relevance_score: number
+  page_number?: number
+}
+
 export interface ChatMessage {
-  role: 'user' | 'assistant'
-  content: string
-  sources?: any[]
+  id: string
+  question: string
+  answer: string
+  sources: ChatSource[]
+  created_at: string
+}
+
+export interface ChatRequest {
+  case_id: string
+  question: string
+}
+
+export interface ChatResponse {
+  answer: string
+  sources: ChatSource[]
+  confidence?: number
 }
