@@ -1,4 +1,4 @@
-# InQuery Demo - AI-Powered Medical Document Processing Platform
+# Demo for Job Application - AI-Powered Medical Document Processing Platform
 
 > **⚠️ Demonstration Project**: This is a technical demonstration built for a job application to showcase full-stack AI development capabilities. It is not a finished product and is intended to demonstrate competency with modern AI/ML technologies and software engineering practices.
 
